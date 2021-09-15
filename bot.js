@@ -6,6 +6,7 @@ const vk = new VK({
   token:"3ba6ffd0f789562e1f585c7c36cf157403b363e89de8a1f3d7c2b40934f48a230862a1f5240c5110f0256"
 })
 
+
 const hearManager = new HearManager();
 
 const users = require('./users.json')
@@ -15,35 +16,19 @@ const superagent = require('superagent');
 
 const mammoth = require('mammoth');
 
-const http = require("http");
+var testq = require("querystring");
+
+var needle = require('needle');
+
+var URL = 'http://krapt-rk.ru/zoo_veter.php?query=%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%2520%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%2520%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%2520%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0';
 
 const _ = require('lodash');
 const xlsx = require('xlsx');
-
-var request = require('request');
-var iconv = require('iconv-lite');
 
 const date = new Date();
 const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
 
 const url = `http://www.krapt-rk.ru/schedule_changes/documents/pssz/${data}/%D0%97%D0%B0%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%83%D1%87%D0%B5%D0%B1%D0%BD%D1%8B%D1%85%20%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%B8%D0%B9%20(%D0%BD%D0%B0%20${data}).docx`;
-const utils = {
-  gi: (int) => {
-    int = int.toString();
-    let text = ``;
-    for (let i = 0; i < int.length; i++)
-    {
-      text += `${int[i]}&#8419;`;
-    }
-    return text;
-  },
-  random: (x, y) => {
-    return y ? Math.round(Math.random() * (y - x)) + x : Math.round(Math.random() * x);
-  },
-  pick: (array) => {
-    return array[utils.random(array.length - 1)];
-      }
-}
 
 setInterval(async () => {
     fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t"))
@@ -60,6 +45,82 @@ vk.updates.on(['message'], async (next, context) => {
 
 vk.updates.on('message_new', hearManager.middleware);
 
+function zamena(msg)
+{
+  needle.get(URL, async function(err, res){
+    if (err) throw err;
+    var site = res.body.split(`schedule_changes/`);
+    var site1 = site[1].split(`'>Замена`);
+    var result1 = testq.stringify({query: site1[0]})
+    var result2 = result1.replace(/%2F/g, `/`)
+    var result3 = result2.replace(/query=/g, ``)
+      var result5 = site1[0].replace("documents/pssz/17.09.2021/", ``)
+      var result6 = result5.replace(".docx", ``)
+    var result4 = `http://krapt-rk.ru/schedule_changes/` + result3;
+    var response;
+    try {
+        response = await superagent.get(result4)
+          .parse(superagent.parse.image)
+          .buffer();
+    }
+    catch(err) 
+    {
+      return msg.send(`Не могу найти замены\nСмотрите на сайте: http://krapt-rk.ru/zoo_veter.php?%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%20%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%20%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%20%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0http://krapt-rk.ru/zoo_veter.php?%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%20%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%20%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%20%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0`)
+    }
+    
+    const buffer = response.body;
+
+    const text = (await mammoth.extractRawText({ buffer })).value;
+    const lines = text.split('\n');
+
+    var result = `${result6}\n`;
+    for(var i = 0; i <= lines.length - 1; i++)
+    {
+      if(lines[i].includes("понедельник"))
+      {
+        result += `Понедельник: \n`
+      }
+      if(lines[i].includes("вторник"))
+      {
+        result += `Вторник: \n`
+      }
+      if(lines[i].includes("среда"))
+      {
+        result += `Среда: \n`
+      }
+      if(lines[i].includes("четверг"))
+      {
+        result += `Четверг: \n`
+      }
+      if(lines[i].includes("пятница"))
+      {
+        result += `Пятница: \n`
+      }
+      if(lines[i].includes("суббота"))
+      {
+        result += `Суббота: \n`
+      }
+        if(lines[i] == 'ТО-3')
+        {
+            if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
+            {
+                result += lines[i+2] + `\n\n`;
+            }
+            else
+            {
+                result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`;
+            }
+        }
+    }
+    if(result == '')
+    {
+        result = `Замен нет`;
+    }
+
+    msg.reply(`${result}`);
+  });
+}
+
 hearManager.hear(/^Замен/i, async (msg) => {
   var response;
   try {
@@ -69,7 +130,7 @@ hearManager.hear(/^Замен/i, async (msg) => {
   }
   catch(err) 
   {
-    return msg.send(`Не могу найти замены`)
+    return zamena(msg)
   }
   
   const buffer = response.body;
@@ -77,18 +138,18 @@ hearManager.hear(/^Замен/i, async (msg) => {
   const text = (await mammoth.extractRawText({ buffer })).value;
   const lines = text.split('\n');
 
-  var result = '';
+  var result = 'Замены на ${data}:';
   for(var i = 0; i <= lines.length; i++)
   {
       if(lines[i] == 'ТО-3')
       {
           if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
           {
-              result = lines[i+2];
+              result += lines[i+2];
           }
           else
           {
-              result = 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12];
+              result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12];
           }
       }
   }
