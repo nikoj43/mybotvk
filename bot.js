@@ -50,7 +50,15 @@ function zamena(msg)
   needle.get(URL, async function(err, res){
     if (err) throw err;
     var site = res.body.split(`schedule_changes/`);
-    var site1 = site[1].split(`'>Замена`);
+    var site1 = ``;
+    if(site.length > 2)
+    {
+      site1 = site[3].split(`'>Замена`);
+    }
+    else
+    {
+      site1 = site[1].split(`'>Замена`);
+    }
     var result1 = testq.stringify({query: site1[0]})
     var result2 = result1.replace(/%2F/g, `/`)
     var result3 = result2.replace(/query=/g, ``)
