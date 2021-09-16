@@ -165,7 +165,7 @@ function zamena(msg)
   });
 }
 
-hearManager.hear(/^Замен/i, async (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => {
   var response;
   const date = new Date();
   const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
@@ -211,7 +211,7 @@ hearManager.hear(/^Замен/i, async (msg) => {
   msg.reply(`${result}`);
 })
 
-hearManager.hear(/^расписание/i, (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, (msg) => {
     const workbook = xlsx.readFile('1.xlsx');
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
@@ -262,27 +262,14 @@ hearManager.hear(/^расписание/i, (msg) => {
     msg.reply(`Расписание на сегодня: \n` + result + `\n\nРасписание на завтра: \n` + result2)
 })
 
-hearManager.hear(/^расписание/i, (msg) => {
-	let phrases = rand(['Я знаю, это', 'Это же очевидно, это', 'Вангую, это', 'Как не понять, что это', 'Инфа сотка, что это', 'Конечно-же это', 'Естественно это'])
-	let smiles = rand([`🍏`,`🌚`,`🌿`,`🍃`,`✨`,`💭`,`💬`,`⚕`,`💨`,`🐤`,`🍀`,`🐼`,`🥚`,`🎯`])
-	vk.api.call("messages.getChatUsers", {
-		chat_id: msg.chat,
-		fields: "photo_100"
-	}).then(function (res) {
-		let user = res.filter(a=> !a.deactivated && a.type == "profile").map(a=> a)
-		user = rand(user);
-		return message.reply(phrases + ` - [id` + user.id + `|` + user.first_name + ` ` + user.last_name + `]` + smiles);
-	})
-});
-
-hearManager.hear(/^(?:инфа|шанс|вероятность)\s([^]+)$/i, (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:инфа|вероятность)\s([^]+)$/i, (msg) => {
 	const phrase = utils.pick(['Вероятность', 'Мне кажется около']);
 	const percent = utils.random(100);
 
 	msg.reply(`${phrase} ${percent}%`)
 });
 
-hearManager.hear(/^(?:шар)\s([^]+)$/i, (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:шар)\s([^]+)$/i, (msg) => {
 	const phrase = utils.pick(['Перспективы не очень хорошие', 'Сейчас нельзя предсказать', 'Пока не ясно', 'Знаки говорят - "Да"', 'Знаки говорят - "Нет"', 'Можешь быть уверен в этом', 'Мой ответ - "нет"', 'Мой ответ - "да"', 'Бесспорно', 'Мне кажется - "Да"', 'Мне кажется - "Нет"']);
 	msg.reply(phrase);
 });
@@ -292,7 +279,7 @@ function rand(text) {
 	return text[tts]
 }
 
-hearManager.hear(/^(?:кто)\s([^]+)$/i, async (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:кто)\s([^]+)$/i, async (msg) => {
 	var users = await vk.api.messages.getConversationMembers({
     peer_id: msg.peerId
   });
@@ -306,6 +293,7 @@ hearManager.hear(/^(?:кто)\s([^]+)$/i, async (msg) => {
   var username = await vk.api.users.get({user_ids: i});
   msg.reply(phrases + ` - [id` + i + `|` + username[0].first_name + ` ` + username[0].last_name + `]`);
 });
+
 
 console.log("Бот запущен");
 vk.updates.start().catch(console.error);
