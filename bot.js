@@ -25,10 +25,46 @@ var URL = 'http://krapt-rk.ru/zoo_veter.php?query=%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE
 const _ = require('lodash');
 const xlsx = require('xlsx');
 
-const date = new Date();
-const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
+const utils = {
+	sp: (int) => {
+		int = int.toString();
+		return int.split('').reverse().join('').match(/[0-9]{1,3}/g).join('.').split('').reverse().join('');
+	},
+	rn: (int, fixed) => {
+		if (int === null) return null;
+		if (int === 0) return '0';
+		fixed = (!fixed || fixed < 0) ? 0 : fixed;
+		let b = (int).toPrecision(2).split('e'),
+			k = b.length === 1 ? 0 : Math.floor(Math.min(b[1].slice(1), 14) / 3),
+			c = k < 1 ? int.toFixed(0 + fixed) : (int / Math.pow(10, k * 3) ).toFixed(1 + fixed),
+			d = c < 0 ? c : Math.abs(c),
+			e = d + ['', 'тыс', 'млн', 'млрд', 'трлн'][k];
 
-const url = `http://www.krapt-rk.ru/schedule_changes/documents/pssz/${data}/%D0%97%D0%B0%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%83%D1%87%D0%B5%D0%B1%D0%BD%D1%8B%D1%85%20%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%B8%D0%B9%20(%D0%BD%D0%B0%20${data}).docx`;
+			e = e.replace(/e/g, '');
+			e = e.replace(/\+/g, '');
+			e = e.replace(/Infinity/g, 'ДОХЕРА');
+
+		return e;
+	},
+	gi: (int) => {
+		int = int.toString();
+
+		let text = ``;
+		for (let i = 0; i < int.length; i++)
+		{
+			text += `${int[i]}&#8419;`;
+		}
+
+		return text;
+	},
+	decl: (n, titles) => { return titles[(n % 10 === 1 && n % 100 !== 11) ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2] },
+	random: (x, y) => {
+		return y ? Math.round(Math.random() * (y - x)) + x : Math.round(Math.random() * x);
+	},
+	pick: (array) => {
+		return array[utils.random(array.length - 1)];
+	}
+}
 
 setInterval(async () => {
     fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t"))
@@ -131,6 +167,11 @@ function zamena(msg)
 
 hearManager.hear(/^Замен/i, async (msg) => {
   var response;
+  const date = new Date();
+  const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
+
+  const url = `http://www.krapt-rk.ru/schedule_changes/documents/pssz/${data}/%D0%97%D0%B0%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%83%D1%87%D0%B5%D0%B1%D0%BD%D1%8B%D1%85%20%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%B8%D0%B9%20(%D0%BD%D0%B0%20${data}).docx`;
+
   try {
       response = await superagent.get(url)
         .parse(superagent.parse.image)
@@ -182,6 +223,9 @@ hearManager.hear(/^расписание/i, (msg) => {
         }
     }
 
+  const date = new Date();
+  const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
+
     var result = '';
     var result2 = '';
     if(date.getDay() == 1)
@@ -217,6 +261,51 @@ hearManager.hear(/^расписание/i, (msg) => {
 
     msg.reply(`Расписание на сегодня: \n` + result + `\n\nРасписание на завтра: \n` + result2)
 })
+
+hearManager.hear(/^расписание/i, (msg) => {
+	let phrases = rand(['Я знаю, это', 'Это же очевидно, это', 'Вангую, это', 'Как не понять, что это', 'Инфа сотка, что это', 'Конечно-же это', 'Естественно это'])
+	let smiles = rand([`🍏`,`🌚`,`🌿`,`🍃`,`✨`,`💭`,`💬`,`⚕`,`💨`,`🐤`,`🍀`,`🐼`,`🥚`,`🎯`])
+	vk.api.call("messages.getChatUsers", {
+		chat_id: msg.chat,
+		fields: "photo_100"
+	}).then(function (res) {
+		let user = res.filter(a=> !a.deactivated && a.type == "profile").map(a=> a)
+		user = rand(user);
+		return message.reply(phrases + ` - [id` + user.id + `|` + user.first_name + ` ` + user.last_name + `]` + smiles);
+	})
+});
+
+hearManager.hear(/^(?:инфа|шанс|вероятность)\s([^]+)$/i, (msg) => {
+	const phrase = utils.pick(['Вероятность', 'Мне кажется около']);
+	const percent = utils.random(100);
+
+	msg.reply(`${phrase} ${percent}%`)
+});
+
+hearManager.hear(/^(?:шар)\s([^]+)$/i, (msg) => {
+	const phrase = utils.pick(['Перспективы не очень хорошие', 'Сейчас нельзя предсказать', 'Пока не ясно', 'Знаки говорят - "Да"', 'Знаки говорят - "Нет"', 'Можешь быть уверен в этом', 'Мой ответ - "нет"', 'Мой ответ - "да"', 'Бесспорно', 'Мне кажется - "Да"', 'Мне кажется - "Нет"']);
+	msg.reply(phrase);
+});
+
+function rand(text) {
+	let tts = Math.floor(text.length * Math.random())
+	return text[tts]
+}
+
+hearManager.hear(/^(?:кто)\s([^]+)$/i, async (msg) => {
+	var users = await vk.api.messages.getConversationMembers({
+    peer_id: msg.peerId
+  });
+  var users2 = await  users.items;
+  var i = rand(users2).member_id
+  let phrases = rand(['Я знаю, это', 'Это же очевидно, это', 'Вангую, это', 'Как не понять, что это', 'Инфа сотка, что это', 'Конечно-же это', 'Естественно это'])
+  while(i < 0)
+  {
+    i = rand(users2).member_id
+  }
+  var username = await vk.api.users.get({user_ids: i});
+  msg.reply(phrases + ` - [id` + i + `|` + username[0].first_name + ` ` + username[0].last_name + `]`);
+});
 
 console.log("Бот запущен");
 vk.updates.start().catch(console.error);
