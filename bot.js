@@ -85,16 +85,10 @@ function zamena(msg)
 {
   needle.get(URL, async function(err, res){
     if (err) throw err;
-    var site = res.body.split(`schedule_changes/`);
-    var site1 = ``;
-    if(site.length > 2)
-    {
-      site1 = site[3].split(`'>Замена`);
-    }
-    else
-    {
-      site1 = site[1].split(`'>Замена`);
-    }
+    let site = res.body.split(`schedule_changes/`);
+    let site1 = ``;
+    if(site.length > 2) { site1 = site[3].split(`'>Замена`); }
+    else { site1 = site[1].split(`'>Замена`); }
     let result1 = testq.stringify({query: site1[0]})
     let result2 = result1.replace(/%2F/g, `/`)
     let result3 = result2.replace(/query=/g, ``)
@@ -107,10 +101,7 @@ function zamena(msg)
           .parse(superagent.parse.image)
           .buffer();
     }
-    catch(err) 
-    {
-      return msg.send(`Не могу найти замены`)
-    }
+    catch(err) { return msg.send(`Не могу найти замены`) }
     
     const buffer = response.body;
 
@@ -121,95 +112,55 @@ function zamena(msg)
     let resultpr = '';
     for(let i = 0; i <= lines.length - 1; i++)
     {
-      if(lines[i].includes("понедельник"))
-      {
-        result += `Понедельник: \n`
-      }
-      if(lines[i].includes("вторник"))
-      {
-        result += `Вторник: \n`
-      }
-      if(lines[i].includes("среда"))
-      {
-        result += `Среда: \n`
-      }
-      if(lines[i].includes("четверг"))
-      {
-        result += `Четверг: \n`
-      }
-      if(lines[i].includes("пятница"))
-      {
-        result += `Пятница: \n`
-      }
-      if(lines[i].includes("суббота"))
-      {
-        result += `Суббота: \n`
-      }
+      if(lines[i].includes("понедельник")) { result += `Понедельник: \n` }
+      if(lines[i].includes("вторник")) { result += `Вторник: \n` }
+      if(lines[i].includes("среда")) { result += `Среда: \n` }
+      if(lines[i].includes("четверг")) { result += `Четверг: \n` }
+      if(lines[i].includes("пятница")) { result += `Пятница: \n` }
+      if(lines[i].includes("суббота")) { result += `Суббота: \n` }
       if(lines[i] == 'ТО-3')
       {
-          if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
-          {
-            resultpr += lines[i+2] + `\n\n`;
-          }
-          else
-          {
-            resultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`;
-          }
+          if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { resultpr += lines[i+2] + `\n\n`; }
+          else { resultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`; }
       }
     }
 
-    if(resultpr == '')
-    {
-      resultpr = 'Замен нет'
-    }
+    if(resultpr == '') { resultpr = 'Замен нет' }
 
     msg.reply(`${result} ${resultpr}`);
   });
 }
 
 hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => {
-  var response;
+  let response;
   const date = new Date();
   const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
 
-  const url = `http://www.krapt-rk.ru/schedule_changes/documents/pssz/${data}/%D0%97%D0%B0%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%83%D1%87%D0%B5%D0%B1%D0%BD%D1%8B%D1%85%20%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%B8%D0%B9%20(%D0%BD%D0%B0%20${data}).docx`;
+  const url1 = `http://www.krapt-rk.ru/schedule_changes/documents/pssz/${data}/%D0%97%D0%B0%D0%BC%D0%B5%D0%BD%D0%B0%20%D1%83%D1%87%D0%B5%D0%B1%D0%BD%D1%8B%D1%85%20%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%B8%D0%B9%20(%D0%BD%D0%B0%20${data}).docx`;
 
   try {
-      response = await superagent.get(url)
+      response = await superagent.get(url1)
         .parse(superagent.parse.image)
         .buffer();
   }
-  catch(err) 
-  {
-    return zamena(msg)
-  }
+  catch(err) { return zamena(msg) }
   
   const buffer = response.body;
 
   const text = (await mammoth.extractRawText({ buffer })).value;
   const lines = text.split('\n');
 
-  var result = 'Замены на ${data}:';
-  for(var i = 0; i <= lines.length; i++)
+  let result = 'Замены на ${data}:\n';
+  for(let i = 0; i <= lines.length; i++)
   {
-      if(lines[i] == 'ТО-3')
-      {
-          if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
-          {
-              result += lines[i+2];
-          }
-          else
-          {
-              result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12];
-          }
-      }
+    if(lines[i] == 'ТО-3')
+    {
+      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { result += lines[i+2]; }
+      else { result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
+    }
   }
-  if(result == '')
-  {
-      result = `Замен нет`;
-  }
+  if(result == '') { result = `Замен нет`; }
 
-  console.log(lines)
   msg.reply(`${result}`);
 })
 
@@ -220,45 +171,43 @@ hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, (msg)
     const res = [];
 
     for (let z in worksheet) {
-        if(z.toString()[0] === 'F'){
-            res.push(worksheet[z].v);
-        }
+      if(z.toString()[0] === 'F') { res.push(worksheet[z].v); }
     }
 
   const date = new Date();
   const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
 
-    var result = '';
-    var result2 = '';
+    let result = '';
+    let result2 = '';
     if(date.getDay() == 1)
     {
-        result = `1. ` + res[1] + `\n2. `+ res[2] + `\n3. ` + res[3];
-        result2 = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
+      result = `1. ` + res[1] + `\n2. `+ res[2] + `\n3. ` + res[3];
+      result2 = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
     }
     if(date.getDay() == 2)
     {
-        result = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
-        result2 = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
+      result = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
+      result2 = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
     }
     if(date.getDay() == 3)
     {
-        result = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
-        result2 = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
+      result = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
+      result2 = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
     }
     if(date.getDay() == 4)
     {
-        result = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
-        result2 = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
+      result = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
+      result2 = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
     }
     if(date.getDay() == 5)
     {
-        result = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
-        result2 = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
+      result = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
+      result2 = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
     }
     if(date.getDay() == 6)
     {
-        result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
-        result2 = `выходной`;
+      result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
+      result2 = `Выходной`;
     }
 
     msg.reply(`Расписание на сегодня: \n` + result + `\n\nРасписание на завтра: \n` + result2)
@@ -282,17 +231,14 @@ function rand(text) {
 }
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:кто)\s([^]+)$/i, async (msg) => {
-	var users = await vk.api.messages.getConversationMembers({
+	let users = await vk.api.messages.getConversationMembers({
     peer_id: msg.peerId
   });
-  var users2 = await  users.items;
-  var i = rand(users2).member_id
+  let users2 = await  users.items;
+  let i = rand(users2).member_id
   let phrases = rand(['Я знаю, это', 'Это же очевидно, это', 'Вангую, это', 'Как не понять, что это', 'Инфа сотка, что это', 'Конечно-же это', 'Естественно это'])
-  while(i < 0)
-  {
-    i = rand(users2).member_id
-  }
-  var username = await vk.api.users.get({user_ids: i});
+  while(i < 0) { i = rand(users2).member_id }
+  let username = await vk.api.users.get({user_ids: i});
   msg.reply(phrases + ` - [id` + i + `|` + username[0].first_name + ` ` + username[0].last_name + `]`);
 });
 
