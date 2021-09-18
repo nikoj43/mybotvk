@@ -95,13 +95,13 @@ function zamena(msg)
     {
       site1 = site[1].split(`'>Замена`);
     }
-    var result1 = testq.stringify({query: site1[0]})
-    var result2 = result1.replace(/%2F/g, `/`)
-    var result3 = result2.replace(/query=/g, ``)
-      var result5 = site1[0].replace("documents/pssz/17.09.2021/", ``)
-      var result6 = result5.replace(".docx", ``)
-    var result4 = `http://krapt-rk.ru/schedule_changes/` + result3;
-    var response;
+    let result1 = testq.stringify({query: site1[0]})
+    let result2 = result1.replace(/%2F/g, `/`)
+    let result3 = result2.replace(/query=/g, ``)
+    let result5 = site1[0].split("/Замена")
+    let result6 = result5[1].replace(".docx", ``)
+    let result4 = `http://krapt-rk.ru/schedule_changes/` + result3;
+    let response;
     try {
         response = await superagent.get(result4)
           .parse(superagent.parse.image)
@@ -109,7 +109,7 @@ function zamena(msg)
     }
     catch(err) 
     {
-      return msg.send(`Не могу найти замены\nСмотрите на сайте: http://krapt-rk.ru/zoo_veter.php?%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%20%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%20%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%20%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0http://krapt-rk.ru/zoo_veter.php?%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%20%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%20%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%20%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0`)
+      return msg.send(`Не могу найти замены`)
     }
     
     const buffer = response.body;
@@ -117,8 +117,9 @@ function zamena(msg)
     const text = (await mammoth.extractRawText({ buffer })).value;
     const lines = text.split('\n');
 
-    var result = `${result6}\n`;
-    for(var i = 0; i <= lines.length - 1; i++)
+    let result = `Замены${result6}\n`;
+    let resultpr = '';
+    for(let i = 0; i <= lines.length - 1; i++)
     {
       if(lines[i].includes("понедельник"))
       {
@@ -144,24 +145,25 @@ function zamena(msg)
       {
         result += `Суббота: \n`
       }
-        if(lines[i] == 'ТО-3')
-        {
-            if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
-            {
-                result += lines[i+2] + `\n\n`;
-            }
-            else
-            {
-                result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`;
-            }
-        }
-    }
-    if(result == '')
-    {
-        result = `Замен нет`;
+      if(lines[i] == 'ТО-3')
+      {
+          if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '')
+          {
+            resultpr += lines[i+2] + `\n\n`;
+          }
+          else
+          {
+            resultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`;
+          }
+      }
     }
 
-    msg.reply(`${result}`);
+    if(resultpr == '')
+    {
+      resultpr = 'Замен нет'
+    }
+
+    msg.reply(`${result} ${resultpr}`);
   });
 }
 
