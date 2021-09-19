@@ -150,18 +150,19 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   const text = (await mammoth.extractRawText({ buffer })).value;
   const lines = text.split('\n');
 
-  let result = 'Замены на ${data}:\n';
+  let result = `Замены на ${data}:\n`;
+  let redultpr = '';
   for(let i = 0; i <= lines.length; i++)
   {
     if(lines[i] == 'ТО-3')
     {
-      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { result += lines[i+2]; }
-      else { result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
+      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { redultpr += lines[i+2]; }
+      else { redultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
     }
   }
-  if(result == '') { result = `Замен нет`; }
+  if(redultpr == '') { redultpr = `Замен нет`; }
 
-  msg.reply(`${result}`);
+  msg.reply(`${result} ${redultpr}`);
 })
 
 hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, (msg) => {
