@@ -66,9 +66,7 @@ const utils = {
 	}
 }
 
-setInterval(async () => {
-    fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t"))
-}, 500);
+setInterval(async () => { fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t")) }, 500);
 
 vk.updates.on(['message'], async (next, context) => {
   if(users.filter(x => x.id === next.senderId)[0]) return context()
@@ -170,59 +168,35 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   msg.reply(`${result}`);
 })
 
-hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, (msg) => {
-    const workbook = xlsx.readFile('1.xlsx');
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*)$/i, (msg) => {
+  const workbook = xlsx.readFile('1.xlsx');
+  const worksheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    const res = [];
+  const res = [];
 
-    for (let z in worksheet) {
-      if(z.toString()[0] === 'F') { res.push(worksheet[z].v); }
-    }
+  for (let z in worksheet) { if(z.toString()[0] === 'F') { res.push(worksheet[z].v); } }
 
   const date = new Date();
-  const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
+  let data;
 
-    let result = '';
-    let result2 = '';
-    if(date.getDay() == 1)
-    {
-      result = `1. ` + res[1] + `\n2. `+ res[2] + `\n3. ` + res[3];
-      result2 = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
-    }
-    if(date.getDay() == 2)
-    {
-      result = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6];
-      result2 = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
-    }
-    if(date.getDay() == 3)
-    {
-      result = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9];
-      result2 = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
-    }
-    if(date.getDay() == 4)
-    {
-      result = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12];
-      result2 = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
-    }
-    if(date.getDay() == 5)
-    {
-      result = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15];
-      result2 = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
-    }
-    if(date.getDay() == 6)
-    {
-      result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18];
-      result2 = `Выходной`;
-    }
+  if(msg.$match[2].toLowerCase().includes("сегодня")) { data = date.getDay() }
+  if(msg.$match[2].toLowerCase().includes("завтра")) { data = date.getDay() + 1 }
+  if(!msg.$match[2].toLowerCase().includes("завтра") && !msg.$match[2].toLowerCase().includes("сегодня")) { return msg.reply('Не понял тебя') }
 
-    msg.reply(`Расписание на сегодня: \n` + result + `\n\nРасписание на завтра: \n` + result2)
+  let result = '';
+  if(data == 1) { result = `1. ` + res[1] + `\n2. `+ res[2] + `\n3. ` + res[3]; }
+  if(data == 2) { result = `1. ` + res[4] + `\n2. `+ res[5] + `\n3. ` + res[6]; }
+  if(data == 3) { result = `1. ` + res[7] + `\n2. `+ res[8] + `\n3. ` + res[9]; }
+  if(data == 4) { result = `1. ` + res[10] + `\n2. `+ res[11] + `\n3. ` + res[12]; }
+  if(data == 5) { result = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15]; }
+  if(data == 6){ result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18]; }
+
+  msg.reply(`Расписание на ${msg.$match[2]}: \n` + result)
 })
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:инфа|вероятность)\s([^]+)$/i, (msg) => {
 	const phrase = utils.pick(['Вероятность', 'Мне кажется около']);
 	const percent = utils.random(100);
-
 	msg.reply(`${phrase} ${percent}%`)
 });
 
@@ -247,7 +221,6 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:кто)\s([^]+)$/i, async 
   let username = await vk.api.users.get({user_ids: i});
   msg.reply(phrases + ` - [id` + i + `|` + username[0].first_name + ` ` + username[0].last_name + `]`);
 });
-
 
 console.log("Бот запущен");
 vk.updates.start().catch(console.error);
