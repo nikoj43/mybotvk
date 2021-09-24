@@ -191,7 +191,11 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*
   if(data == 5) { result = `1. ` + res[13] + `\n2. `+ res[14] + `\n3. ` + res[15]; }
   if(data == 6){ result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18]; }
 
-  msg.reply(`Расписание на ${msg.$match[2]}: \n` + result)
+  return msg.reply(`Расписание на ${msg.$match[2]}: \n` + result)
+})
+
+hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, async (msg) => {
+  msg.reply('Используй: Руба расписание [сегодня/завтра]')
 })
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:инфа|вероятность)\s([^]+)$/i, (msg) => {
