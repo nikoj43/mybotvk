@@ -87,7 +87,7 @@ function zamena(msg)
     if (err) throw err;
     let site = res.body.split(`schedule_changes/`);
     let site1 = ``;
-    if(site.length > 2) { site1 = site[3].split(`'>Замена`); }
+    if(site.length > 2) { site1 = site[2].split(`'>Замена`); }
     else { site1 = site[1].split(`'>Замена`); }
     let result1 = testq.stringify({query: site1[0]})
     let result2 = result1.replace(/%2F/g, `/`)
@@ -150,19 +150,24 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   const text = (await mammoth.extractRawText({ buffer })).value;
   const lines = text.split('\n');
 
-  let result = `Замены на ${data}:\n`;
-  let redultpr = '';
+  let result = 'Замены на ${data}:\n';
   for(let i = 0; i <= lines.length; i++)
   {
+    if(lines[i].includes("понедельник")) { result += `Понедельник: \n` }
+    if(lines[i].includes("вторник")) { result += `Вторник: \n` }
+    if(lines[i].includes("среда")) { result += `Среда: \n` }
+    if(lines[i].includes("четверг")) { result += `Четверг: \n` }
+    if(lines[i].includes("пятница")) { result += `Пятница: \n` }
+    if(lines[i].includes("суббота")) { result += `Суббота: \n` }
     if(lines[i] == 'ТО-3')
     {
-      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { redultpr += lines[i+2]; }
-      else { redultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
+      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { result += lines[i+2]; }
+      else { result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
     }
   }
-  if(redultpr == '') { redultpr = `Замен нет`; }
+  if(result == '') { result = `Замен нет`; }
 
-  msg.reply(`${result} ${redultpr}`);
+  msg.reply(`${result}`);
 })
 
 hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, (msg) => {
