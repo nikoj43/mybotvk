@@ -148,8 +148,8 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   const text = (await mammoth.extractRawText({ buffer })).value;
   const lines = text.split('\n');
 
-  let result = 'Замены на ${data}:\n';
-  for(let i = 0; i <= lines.length; i++)
+  let result = `Замены на ${data}:\n`;
+  for(let i = 0; i <= lines.length - 1; i++)
   {
     if(lines[i].includes("понедельник")) { result += `Понедельник: \n` }
     if(lines[i].includes("вторник")) { result += `Вторник: \n` }
