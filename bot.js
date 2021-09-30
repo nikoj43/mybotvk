@@ -176,12 +176,6 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   msg.reply(`${result}`);
 })
 
-hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, async (msg) => {
-  ruffi(msg)
-
-  msg.reply('Используй: Руба расписание [сегодня/завтра]')
-});
-
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*)$/i, (msg) => {
   ruffi(msg)
   const workbook = xlsx.readFile('1.xlsx');
@@ -203,6 +197,12 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*
   if(data == 6){ result = `1. ` + res[16] + `\n2. `+ res[17] + `\n3. ` + res[18]; }
   return msg.reply(`Расписание на ${msg.$match[2]}: \n` + result)
 })
+
+hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, async (msg) => {
+  ruffi(msg)
+
+  return msg.reply('Используй: Руба расписание [сегодня/завтра]')
+});
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:вероятность)\s([^]+)$/i, (msg) => {
   ruffi(msg)
