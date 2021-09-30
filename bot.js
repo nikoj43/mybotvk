@@ -66,16 +66,21 @@ setInterval(async () => {
   fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t")) 
 }, 500);
 
-vk.updates.on(['message'], async (next, context) => {
-  if((next.senderId == 207071245 || next.senderId == -207071245) && stop == false)
+function ruffi(msg)
+{
+  if((msg.senderId == 207071245 || msg.senderId == -207071245) && stop == false)
   {
     const rand = utils.pick(['пошёл нахер', 'соси писюн', 'не разговаривай со мной']);
-    next.send(`Руффи, ${rand}`)
+    msg.send(`Руффи, ${rand}`)
     stop = true;
     setTimeout(async () => { 
       stop = false;
     }, 10000);
   }
+}
+
+vk.updates.on(['message'], async (next, context) => {
+  ruffi(next)
 
   if(users.filter(x => x.id === next.senderId)[0]) return context()
   users.push({ id: next.senderId, })
@@ -135,6 +140,7 @@ function zamena(msg)
 }
 
 hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => {
+  ruffi(msg)
   let response;
   const date = new Date();
   const data = `${date.getDate() + 1}.0${date.getMonth() + 1}.${date.getFullYear()}`
@@ -170,7 +176,14 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   msg.reply(`${result}`);
 })
 
+hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, async (msg) => {
+  ruffi(msg)
+
+  msg.reply('Используй: Руба расписание [сегодня/завтра]')
+});
+
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*)$/i, (msg) => {
+  ruffi(msg)
   const workbook = xlsx.readFile('1.xlsx');
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const res = [];
@@ -191,11 +204,9 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*
   return msg.reply(`Расписание на ${msg.$match[2]}: \n` + result)
 })
 
-hearManager.hear(/^(Руба |Руба,|Руба, )расписание/i, async (msg) => {
-  msg.reply('Используй: Руба расписание [сегодня/завтра]')
-})
-
-hearManager.hear(/^(Руба |Руба,|Руба, )(?:инфа|вероятность)\s([^]+)$/i, (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:вероятность)\s([^]+)$/i, (msg) => {
+  ruffi(msg)
+  
 	const phrase = utils.pick(['Вероятность', 'Мне кажется около']);
 	const percent = utils.random(100);
 	
@@ -203,7 +214,9 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:инфа|вероятно�
 });
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:шар)\s([^]+)$/i, (msg) => {
-	const phrase = utils.pick(['Перспективы не очень хорошие', 'Сейчас нельзя предсказать', 'Пока не ясно', 'Знаки говорят - "Да"', 'Знаки говорят - "Нет"', 'Можешь быть уверен в этом', 'Мой ответ - "нет"', 'Мой ответ - "да"', 'Бесспорно', 'Мне кажется - "Да"', 'Мне кажется - "Нет"']);
+	ruffi(msg)
+  
+  const phrase = utils.pick(['Перспективы не очень хорошие', 'Сейчас нельзя предсказать', 'Пока не ясно', 'Знаки говорят - "Да"', 'Знаки говорят - "Нет"', 'Можешь быть уверен в этом', 'Мой ответ - "нет"', 'Мой ответ - "да"', 'Бесспорно', 'Мне кажется - "Да"', 'Мне кажется - "Нет"']);
 	
   msg.reply(phrase);
 });
@@ -215,6 +228,8 @@ function rand(text) {
 }
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:кто)\s([^]+)$/i, async (msg) => {
+  ruffi(msg)
+
 	let users = await vk.api.messages.getConversationMembers({ peer_id: msg.peerId });
   let users2 = await  users.items;
   let i = rand(users2).member_id
