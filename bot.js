@@ -14,6 +14,8 @@ var testq = require("querystring");
 
 var needle = require('needle');
 
+var stop = false;
+
 var URL = 'http://krapt-rk.ru/zoo_veter.php?query=%D0%9F%D0%BE%D0%B4%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B8%2520%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D1%81%D1%82%D0%BE%D0%B2%2520%D1%81%D1%80%D0%B5%D0%B4%D0%BD%D0%B5%D0%B3%D0%BE%2520%D0%B7%D0%B2%D0%B5%D0%BD%D0%B0';
 
 const _ = require('lodash');
@@ -60,13 +62,19 @@ const utils = {
 	}
 }
 
-setInterval(async () => { fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t")) }, 500);
+setInterval(async () => { 
+  fs.writeFileSync("./users.json", JSON.stringify(users, null, "\t")) 
+}, 500);
 
 vk.updates.on(['message'], async (next, context) => {
-  if(next.senderId == 207071245 || next.senderId == -207071245)
+  if((next.senderId == 207071245 || next.senderId == -207071245) && stop == false)
   {
-    const rand = utils.pick(['пошёл нахер', 'соси писюн']);
-    msg.send(`Руффи, ${rand}`)
+    const rand = utils.pick(['пошёл нахер', 'соси писюн', 'не разговаривай со мной']);
+    next.send(`Руффи, ${rand}`)
+    stop = true;
+    setTimeout(async () => { 
+      stop = false;
+    }, 10000);
   }
 
   if(users.filter(x => x.id === next.senderId)[0]) return context()
@@ -103,25 +111,26 @@ function zamena(msg)
     const buffer = response.body;
     const text = (await mammoth.extractRawText({ buffer })).value;
     const lines = text.split('\n');
-    let result = `Замены${result6}\n`;
-    let resultpr = '';
+    let result = ``;
+    let resultpr = `Замены ${result6}\n`;
 
     for(let i = 0; i <= lines.length - 1; i++)
     {
-      if(lines[i].includes("понедельник")) { result += `Понедельник: \n` }
-      if(lines[i].includes("вторник")) { result += `Вторник: \n` }
-      if(lines[i].includes("среда")) { result += `Среда: \n` }
-      if(lines[i].includes("четверг")) { result += `Четверг: \n` }
-      if(lines[i].includes("пятница")) { result += `Пятница: \n` }
-      if(lines[i].includes("суббота")) { result += `Суббота: \n` }
+      if(lines[i].includes("понедельник")) { result = `Понедельник:\n` }
+      else if(lines[i].includes("вторник")) { result = `Вторник:\n` }
+      else if(lines[i].includes("среда")) { result = `Среда:\n` }
+      else if(lines[i].includes("четверг")) { result = `Четверг:\n` }
+      else if(lines[i].includes("пятница")) { result = `Пятница:\n` }
+      else if(lines[i].includes("суббота")) { result = `Суббота:\n` }
+
       if(lines[i] == 'ТО-3')
       {
-        if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { resultpr += lines[i+2] + `\n\n`; }
-        else { resultpr += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`; }
+        if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { resultpr += result + lines[i+2] + `\n\n`; }
+        else { resultpr += result + 'Заменяемый предмет: ' + lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`; }
       }
     }
     if(resultpr == '') { resultpr = 'Замен нет' }
-    msg.reply(`${result} ${resultpr}`);
+    msg.reply(`${resultpr}`);
   });
 }
 
@@ -145,16 +154,16 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   
   for(let i = 0; i <= lines.length - 1; i++)
   {
-    if(lines[i].includes("понедельник")) { result += `Понедельник: \n` }
-    if(lines[i].includes("вторник")) { result += `Вторник: \n` }
-    if(lines[i].includes("среда")) { result += `Среда: \n` }
-    if(lines[i].includes("четверг")) { result += `Четверг: \n` }
-    if(lines[i].includes("пятница")) { result += `Пятница: \n` }
-    if(lines[i].includes("суббота")) { result += `Суббота: \n` }
+    if(lines[i].includes("понедельник")) { result += `Понедельник:\n` }
+    if(lines[i].includes("вторник")) { result += `Вторник:\n` }
+    if(lines[i].includes("среда")) { result += `Среда:\n` }
+    if(lines[i].includes("четверг")) { result += `Четверг:\n` }
+    if(lines[i].includes("пятница")) { result += `Пятница:\n` }
+    if(lines[i].includes("суббота")) { result += `Суббота:\n` }
     if(lines[i] == 'ТО-3')
     {
-      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { result += lines[i+2]; }
-      else { result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12]; }
+      if(lines[i+4].length > 1 && lines[i+4].length <= 4 || lines[i+4] == '') { result += lines[i+2] + `\n\n`; }
+      else { result += 'Заменяемый предмет: ' +lines[i+2] + '\n№ пары: ' + lines[i+4] + '\nПреподаватель: ' + lines[i+6] + '\nЗаменяющий предмет: ' + lines[i+8]+ '\nПреподаватель: ' + lines[i+10] + '\n№ ауд.: ' + lines[i+12] + `\n\n`; }
     }
   }
   if(result == '') { result = `Замен нет`; }
