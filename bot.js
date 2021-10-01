@@ -164,11 +164,27 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:пошли|послать)
   let users = await vk.api.messages.getConversationMembers({ peer_id: msg.peerId });
   let profile = await users.profiles;
   let username = await vk.api.users.get({user_ids: msg.senderId});
-  let name = '';
+  let name = ``;
+  let qwer = ``;
   for(let i = 0; i <= profile.length - 1; i++)
   {
-    name = profile[i].first_name.toLowerCase + ' ' + profile[i].last_name.toLowerCase;
-    if(name.includes(msg.$match[2].toLowerCase)) { msg.send(`[id${profile[i].id}|${profile[i].first_name} ${profile[i].last_name}], [id${username[0].id}|${username[0].first_name} ${username[0].last_name}] послал вас на хер`) }
+    name = profile[i].first_name + ' ' + profile[i].last_name;
+    qwer = name.toLowerCase();
+    if(qwer.includes(msg.$match[2].toLowerCase())) { return msg.send(`[id${profile[i].id}|${profile[i].first_name} ${profile[i].last_name}], [id${username[0].id}|${username[0].first_name} ${username[0].last_name}] попросил послать вас на хер`) }
+  }
+})
+
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)$/i, async (msg) => {
+  if(msg.senderId != 486628983 && msg.senderId != 188963001) return msg.reply('Нет доступа к команде))')
+  msg.reply('Используй: Руба спам [текст] [кол-во]')
+})
+
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)\s(.*)\s([0-9]+)$/i, async (msg) => {
+  if(msg.senderId != 486628983 && msg.senderId != 188963001) return msg.reply('Нет доступа к команде))')
+
+  for(let i = 0; i < msg.$match[3]; i++)
+  {
+    msg.send(`${msg.$match[2]}`) 
   }
 })
 
