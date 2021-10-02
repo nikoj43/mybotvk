@@ -68,7 +68,10 @@ setInterval(async () => {
 
 vk.updates.on(['message'], async (next, context) => {
   if(users.filter(x => x.id === next.senderId)[0]) return context()
-  users.push({ id: next.senderId, })
+  users.push({ 
+    id: next.senderId, 
+    spamcount: 0,
+  })
 
   return context()
 })
@@ -179,12 +182,36 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)$/i, async (msg) 
   msg.reply('Используй: Руба спам [текст] [кол-во]')
 })
 
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:спамдоступ)\s([0-9]+)\s([0-9]+)$/i, async (msg) => {
+  if(msg.senderId != 188963001) return msg.reply('Нет доступа к команде))')
+  let user = users.find(x=> x.id === Number(msg.$match[2]));
+  if(!user) return msg.reply('Не верный id')
+
+  let username = await vk.api.users.get({user_ids: msg.senderId});
+  let username1 = await vk.api.users.get({user_ids: msg.$match[2]});
+
+  user.spamcount = msg.$match[3];
+  console.log(username)
+  msg.send(username[0].first_name + ' ' + username[0].last_name + ' выдал доступ к команде \'спам\' ' + username1[0].first_name + ' ' + username1[0].last_name);
+})
+
+var spamcd = false;
+
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)\s(.*)\s([0-9]+)$/i, async (msg) => {
-  if(msg.senderId != 486628983 && msg.senderId != 188963001) return msg.reply('Нет доступа к команде))')
+  let user = users.find(x=> x.id === msg.senderId);
+  if(user.spamcount <= 0) return msg.reply('Нет доступа к команде))')
+  if(msg.$match[3] > user.spamcount) return msg.reply(`Нельзя больше ${msg.user.spamcount} сообщений`)
+  if(spamcd == true) return msg.reply(`Командой можно пользоваться раз в 5 минут`)
+
+  setTimeout(() => {
+		spamcd = false;
+	}, 300000);
+
+  spamcd = true;
 
   for(let i = 0; i < msg.$match[3]; i++)
   {
-    msg.send(`${msg.$match[2]}`) 
+    msg.send(msg.$match[2]) 
   }
 })
 
