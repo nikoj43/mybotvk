@@ -163,17 +163,19 @@ hearManager.hear(/^(Руба |Руба,|Руба, )Замен/i, async (msg) => 
   msg.reply(`${result}`);
 })
 
-hearManager.hear(/^(Руба |Руба,|Руба, )(?:пошли|послать)\s(.*)$/i, async (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:пошли|послать)\s([^]+)\s(.*)$/i, async (msg) => {
+  if(msg.senderId == 81862046) return msg.reply(`Сам пошёл ${msg.$match[2]}`)
   let users = await vk.api.messages.getConversationMembers({ peer_id: msg.peerId });
   let profile = await users.profiles;
   let username = await vk.api.users.get({user_ids: msg.senderId});
   let name = ``;
   let qwer = ``;
+
   for(let i = 0; i <= profile.length - 1; i++)
   {
     name = profile[i].first_name + ' ' + profile[i].last_name;
     qwer = name.toLowerCase();
-    if(qwer.includes(msg.$match[2].toLowerCase())) { return msg.send(`[id${profile[i].id}|${profile[i].first_name} ${profile[i].last_name}], [id${username[0].id}|${username[0].first_name} ${username[0].last_name}] попросил послать вас на хер`) }
+    if(qwer.includes(msg.$match[3].toLowerCase())) { return msg.send(`[id${profile[i].id}|${profile[i].first_name} ${profile[i].last_name}], [id${username[0].id}|${username[0].first_name} ${username[0].last_name}] попросил послать вас ${msg.$match[2]}`) }
   }
 })
 
@@ -184,35 +186,28 @@ hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)$/i, async (msg) 
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:спамдоступ)\s([0-9]+)\s([0-9]+)$/i, async (msg) => {
   if(msg.senderId != 188963001) return msg.reply('Нет доступа к команде))')
-  let user = users.find(x=> x.id === Number(msg.$match[2]));
+  let user = users.find(x => x.id === Number(msg.$match[2]));
   if(!user) return msg.reply('Не верный id')
 
   let username = await vk.api.users.get({user_ids: msg.senderId});
   let username1 = await vk.api.users.get({user_ids: msg.$match[2]});
 
   user.spamcount = msg.$match[3];
-  console.log(username)
   msg.send(username[0].first_name + ' ' + username[0].last_name + ' выдал доступ к команде \'спам\' ' + username1[0].first_name + ' ' + username1[0].last_name);
 })
 
 var spamcd = false;
 
-hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)\s(.*)\s([0-9]+)$/i, async (msg) => {
+hearManager.hear(/^(Руба |Руба,|Руба, )(?:спам)\s([^]+)\s([0-9]+)$/i, async (msg) => {
   let user = users.find(x=> x.id === msg.senderId);
   if(user.spamcount <= 0) return msg.reply('Нет доступа к команде))')
-  if(msg.$match[3] > user.spamcount) return msg.reply(`Нельзя больше ${msg.user.spamcount} сообщений`)
+  if(msg.$match[3] > user.spamcount) return msg.reply(`Нельзя больше ${user.spamcount} сообщений`)
   if(spamcd == true) return msg.reply(`Командой можно пользоваться раз в 5 минут`)
 
-  setTimeout(() => {
-		spamcd = false;
-	}, 300000);
+  setTimeout(() => { spamcd = false; }, 300000);
 
+  for(let i = 0; i < msg.$match[3]; i++) { msg.send(msg.$match[2]); }
   spamcd = true;
-
-  for(let i = 0; i < msg.$match[3]; i++)
-  {
-    msg.send(msg.$match[2]) 
-  }
 })
 
 hearManager.hear(/^(Руба |Руба,|Руба, )(?:расписание)\s(.*)$/i, (msg) => {
